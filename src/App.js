@@ -5,21 +5,28 @@ import HomePage from "./HomePage/HomePage";
 import CreateCourse from "./CreateCourse/CreateCourse";
 
 // states & components
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { PlaylistContext } from "./context/PlaylistContext";
+import { VideoListContext } from "./context/VideoListContext";
+import { reducer } from "./context/reducer";
+
+const initialState = [];
 
 const App = () => {
   const [playlistId, setPlaylistId] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
     <div className="App">
       <PlaylistContext.Provider value={{ playlistId, setPlaylistId }}>
-        <BrowserRouter>
-          <Switch>
-            <Route exact path="/" component={HomePage} />
-            <Route exact path="/createCourse" component={CreateCourse} />
-          </Switch>
-        </BrowserRouter>
+        <VideoListContext.Provider value={{ state, dispatch }}>
+          <BrowserRouter>
+            <Switch>
+              <Route exact path="/" component={HomePage} />
+              <Route exact path="/createCourse" component={CreateCourse} />
+            </Switch>
+          </BrowserRouter>
+        </VideoListContext.Provider>
       </PlaylistContext.Provider>
     </div>
   );

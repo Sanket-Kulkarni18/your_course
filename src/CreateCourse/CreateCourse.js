@@ -7,20 +7,28 @@ import {
   Typography,
 } from "@material-ui/core";
 import { useContext, useEffect, useState } from "react";
+import { SET_VIDEOS } from "../context/action.types";
 import { PlaylistContext } from "../context/PlaylistContext";
+import { VideoListContext } from "../context/VideoListContext";
 import { youtubeRequest } from "../utils/youtubeAPI";
 import VideoCard from "./VideoCard";
 
 const useStyles = makeStyles({
+  heading: {
+    padding: "0.3em",
+    margin: "0.3em",
+  },
   videoList: {
-    maxHeight: "100vh",
+    maxHeight: "88vh",
     overflow: "auto",
+    margin: "0.4em 0",
   },
 });
 
 const CreateCourse = () => {
   const classes = useStyles();
   const { playlistId } = useContext(PlaylistContext);
+  const { state, dispatch } = useContext(VideoListContext);
 
   const [videos, setVideos] = useState();
   const [loadingPlaylistItems, setLoadingPlaylistItems] = useState(true);
@@ -47,7 +55,14 @@ const CreateCourse = () => {
         };
         videosArray.push(video);
       });
-      setVideos(videosArray);
+      // save data to state
+      // setVideos(videosArray);
+      // save data to context
+      await dispatch({
+        type: SET_VIDEOS,
+        payload: videosArray,
+      });
+      // setVideos(state);
       setLoadingPlaylistItems(false);
     }
   };
@@ -63,15 +78,23 @@ const CreateCourse = () => {
       <Container maxWidth={false}>
         <Grid container spacing={0}>
           {/* left half portion */}
-          <Grid container item sm={6}>
-            <Typography component="h5" variant="h5">
+          <Grid
+            container
+            item
+            sm={6}
+            spacing={2}
+            direction="row"
+            justify="center"
+            alignItems="center"
+          >
+            <Typography component="h5" variant="h5" className={classes.heading}>
               List of Videos for course
             </Typography>
             <List className={classes.videoList}>
               {loadingPlaylistItems ? (
                 <p>Wait we are loading</p>
               ) : (
-                videos.map((mVideo) => (
+                state.map((mVideo) => (
                   <ListItem key={mVideo.videoId} maxWidth="100%">
                     <VideoCard mVideo={mVideo} />
                   </ListItem>
