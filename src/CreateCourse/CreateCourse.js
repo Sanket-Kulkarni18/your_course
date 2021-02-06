@@ -10,7 +10,7 @@ import { useContext, useEffect, useState } from "react";
 import { SET_VIDEOS } from "../context/action.types";
 import { PlaylistContext } from "../context/PlaylistContext";
 import { VideoListContext } from "../context/VideoListContext";
-import { youtubeRequest } from "../utils/youtubeAPI";
+import { youtubeRequest, ytVideoRequest } from "../utils/youtubeAPI";
 import VideoCard from "./VideoCard";
 
 const useStyles = makeStyles({
@@ -30,8 +30,8 @@ const CreateCourse = () => {
   const { playlistId } = useContext(PlaylistContext);
   const { state, dispatch } = useContext(VideoListContext);
 
-  const [videos, setVideos] = useState();
   const [loadingPlaylistItems, setLoadingPlaylistItems] = useState(true);
+  const [loadingPlaylistVideo, setLoadingPlaylistVideo] = useState(true);
 
   // https://youtube.googleapis.com/youtube/v3/
   // playlistItems?part=snippet&playlistId=PLRAV69dS1uWSxUIk5o3vQY2-_VKsOpXLD&key=[YOUR_API_KEY]
@@ -55,21 +55,42 @@ const CreateCourse = () => {
         };
         videosArray.push(video);
       });
-      // save data to state
-      // setVideos(videosArray);
       // save data to context
       await dispatch({
         type: SET_VIDEOS,
         payload: videosArray,
       });
-      // setVideos(state);
       setLoadingPlaylistItems(false);
     }
+  };
+
+  const fetchVideoDurations = async () => {
+    setLoadingPlaylistVideo(true);
+    let newVideosArray = [];
+    for (const videoObject of state) {
+      const { status, data } = await ytVideoRequest.get("/videos", {
+        params: {
+          id: videoObject.videoId,
+        },
+      });
+      if (status === 200) {
+        let duration = data.items[0]?.contentDetails.duration;
+        console.log(duration);
+        // save this duration in videoObject and save further in context
+        newVideosArray.push({ ...videoObject, duration });
+      }
+    }
+    dispatch({
+      type: SET_VIDEOS,
+      payload: newVideosArray,
+    });
+    console.log(newVideosArray);
   };
 
   useEffect(() => {
     if (playlistId) {
       fetchPlaylist();
+      fetchVideoDurations();
     }
   }, [playlistId]);
 

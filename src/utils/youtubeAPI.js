@@ -11,3 +11,12 @@ export const youtubeRequest = axios.create({
   },
   headers: {},
 });
+
+export const ytVideoRequest = axios.create({
+  baseURL: "https://www.googleapis.com/youtube/v3/",
+  params: {
+    part: "contentDetails",
+    key: API_KEY,
+  },
+  headers: {},
+});
