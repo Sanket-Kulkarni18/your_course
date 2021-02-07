@@ -2,7 +2,7 @@ import { DELETE_VIDEO, EDIT_VIDEO_TITLE, SET_VIDEOS } from "./action.types";
 
 export const reducer = (state, action) => {
   let newState = [...state];
-  let videoIndex = newState.findIndex((vid) => vid.id === action.id);
+  let videoIndex = newState.findIndex((vid) => vid.videoId === action.id);
   switch (action.type) {
     case SET_VIDEOS:
       newState = action.payload;

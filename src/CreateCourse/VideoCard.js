@@ -1,17 +1,25 @@
 import {
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   IconButton,
   makeStyles,
   Paper,
+  Snackbar,
   TextField,
   Typography,
 } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import { useContext, useState } from "react";
 import { DELETE_VIDEO, EDIT_VIDEO_TITLE } from "../context/action.types";
 import { VideoListContext } from "../context/VideoListContext";
+import { PlaylistContext } from "../context/PlaylistContext";
 
 const useStyles = makeStyles({
   card: {
@@ -25,12 +33,16 @@ const useStyles = makeStyles({
   },
 });
 
+const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
+
 const VideoCard = ({ mVideo }) => {
   const classes = useStyles();
 
   const { dispatch } = useContext(VideoListContext);
+  const { alertOpen, setAlertOpen } = useContext(PlaylistContext);
   const [editVideo, setEditVideo] = useState(false);
   const [newVideoTitle, setNewVideoTitle] = useState("");
+  const [confirmDeleteDialog, setConfirmDeleteDialog] = useState(false);
 
   const changeVal = (e) => {
     setNewVideoTitle(e.target.value);
@@ -47,11 +59,21 @@ const VideoCard = ({ mVideo }) => {
   };
 
   const deleteVideo = () => {
+    setConfirmDeleteDialog(false);
     dispatch({
       type: DELETE_VIDEO,
       payload: null,
       id: mVideo.videoId,
     });
+    setAlertOpen(true);
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setAlertOpen(false);
+  };
+  const toggleConfirmDelete = () => {
+    setConfirmDeleteDialog(!confirmDeleteDialog);
   };
 
   return (
@@ -89,13 +111,49 @@ const VideoCard = ({ mVideo }) => {
               <EditIcon fontSize="default" className={classes.editBtn} />
             </IconButton>
           </span>
-          <span onClick={deleteVideo}>
+          <span onClick={toggleConfirmDelete}>
             <IconButton size="medium">
               <DeleteIcon fontSize="default" />
             </IconButton>
           </span>
         </Grid>
       </Grid>
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+      >
+        <Alert severity="warning" onClose={handleAlertClose}>
+          Deleted video from the Course!
+        </Alert>
+      </Snackbar>
+      <div className="deleteDialog">
+        <Dialog
+          open={confirmDeleteDialog}
+          onClose={toggleConfirmDelete}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Are you sure you want to Delete this video?"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {
+                "This video will be removed from the playlist & no longer will be available in Your Course"
+              }
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={toggleConfirmDelete} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={deleteVideo} color="primary" autoFocus>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     </Paper>
   );
 };

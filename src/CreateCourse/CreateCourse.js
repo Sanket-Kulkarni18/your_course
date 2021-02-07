@@ -1,4 +1,5 @@
 import {
+  CircularProgress,
   Container,
   Grid,
   List,
@@ -22,6 +23,11 @@ const useStyles = makeStyles({
     maxHeight: "88vh",
     overflow: "auto",
     margin: "0.4em 0",
+  },
+  progress: {
+    display: "block",
+    textAlign: "center",
+    margin: "25% 50% 0 25%",
   },
 });
 
@@ -91,6 +97,9 @@ const CreateCourse = () => {
     if (playlistId) {
       fetchPlaylist();
       fetchVideoDurations();
+    } else {
+      setLoadingPlaylistItems(false);
+      setLoadingPlaylistVideo(false);
     }
   }, [playlistId]);
 
@@ -105,23 +114,26 @@ const CreateCourse = () => {
             sm={6}
             spacing={2}
             direction="row"
-            justify="center"
+            // justify="center"
             alignItems="center"
           >
             <Typography component="h5" variant="h5" className={classes.heading}>
               List of Videos for course
             </Typography>
-            <List className={classes.videoList}>
-              {loadingPlaylistItems ? (
-                <p>Wait we are loading</p>
-              ) : (
-                state.map((mVideo) => (
+
+            {loadingPlaylistItems ? (
+              <div className={classes.progress}>
+                <CircularProgress size={60} classes={classes.progress} />
+              </div>
+            ) : (
+              <List className={classes.videoList}>
+                {state.map((mVideo) => (
                   <ListItem key={mVideo.videoId} maxWidth="100%">
                     <VideoCard mVideo={mVideo} />
                   </ListItem>
-                ))
-              )}
-            </List>
+                ))}
+              </List>
+            )}
           </Grid>
           {/* right half portion */}
           <Grid container item sm={6}>

@@ -14,11 +14,14 @@ const initialState = [];
 
 const App = () => {
   const [playlistId, setPlaylistId] = useState("");
+  const [alertOpen, setAlertOpen] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
     <div className="App">
-      <PlaylistContext.Provider value={{ playlistId, setPlaylistId }}>
+      <PlaylistContext.Provider
+        value={{ playlistId, setPlaylistId, alertOpen, setAlertOpen }}
+      >
         <VideoListContext.Provider value={{ state, dispatch }}>
           <BrowserRouter>
             <Switch>
