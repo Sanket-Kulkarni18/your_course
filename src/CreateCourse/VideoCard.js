@@ -31,6 +31,21 @@ const useStyles = makeStyles({
   editBtn: {
     color: "royalblue",
   },
+  thumbImg: {
+    width: "12rem",
+    margin: "0",
+    padding: "0",
+  },
+  durationText: {
+    backgroundColor: "#202020",
+    borderRadius: "0.4em",
+    color: "white",
+    fontSize: "0.8em",
+    display: "inline",
+    padding: "0.2em",
+    margin: "0 1.1em 0 0",
+    float: "right",
+  },
 });
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -80,7 +95,19 @@ const VideoCard = ({ mVideo }) => {
     <Paper elevation={6} className={classes.card}>
       <Grid container spacing={0}>
         <Grid item lg={4}>
-          <img src={mVideo.thumb} alt="video_thumb" width="200rem" />
+          <img
+            src={mVideo.thumb}
+            alt="video_thumb"
+            // width="240rem"
+            className={classes.thumbImg}
+          />
+          {mVideo.duration ? (
+            <div>
+              <Typography component="p" className={classes.durationText}>
+                {mVideo.duration}
+              </Typography>
+            </div>
+          ) : null}
         </Grid>
         <Grid item lg={6}>
           {editVideo ? (
@@ -89,7 +116,7 @@ const VideoCard = ({ mVideo }) => {
                 width="2em"
                 onChange={changeVal}
                 placeholder="new title"
-                // value={mVideo.videoTitle}
+                defaultValue={mVideo.videoTitle}
               />
               <span onClick={handleEditSubmit}>
                 <Button color="primary">Ok</Button>

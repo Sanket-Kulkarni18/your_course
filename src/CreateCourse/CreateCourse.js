@@ -13,6 +13,8 @@ import { PlaylistContext } from "../context/PlaylistContext";
 import { VideoListContext } from "../context/VideoListContext";
 import { youtubeRequest, ytVideoRequest } from "../utils/youtubeAPI";
 import VideoCard from "./VideoCard";
+import { convert_time } from "../utils/functions";
+import CourseForm from "./CourseForm";
 
 const useStyles = makeStyles({
   heading: {
@@ -38,9 +40,8 @@ const CreateCourse = () => {
 
   const [loadingPlaylistItems, setLoadingPlaylistItems] = useState(true);
   const [loadingPlaylistVideo, setLoadingPlaylistVideo] = useState(true);
-
-  // https://youtube.googleapis.com/youtube/v3/
-  // playlistItems?part=snippet&playlistId=PLRAV69dS1uWSxUIk5o3vQY2-_VKsOpXLD&key=[YOUR_API_KEY]
+  const [totalResults, setTotalResults] = useState(0);
+  const [durations, setDurations] = useState([]);
 
   const fetchPlaylist = async () => {
     setLoadingPlaylistItems(true);
@@ -67,6 +68,8 @@ const CreateCourse = () => {
         payload: videosArray,
       });
       setLoadingPlaylistItems(false);
+
+      setTotalResults(data.pageInfo?.totalResults);
     }
   };
 
@@ -81,6 +84,7 @@ const CreateCourse = () => {
       });
       if (status === 200) {
         let duration = data.items[0]?.contentDetails.duration;
+        setDurations([...durations, duration]);
         console.log(duration);
         // save this duration in videoObject and save further in context
         newVideosArray.push({ ...videoObject, duration });
@@ -93,10 +97,23 @@ const CreateCourse = () => {
     console.log(newVideosArray);
   };
 
+  const calculateTotalDuration = () => {
+    let totalDuration = 0;
+    durations.forEach(async (dur) => {
+      let secondsDur = await convert_time(dur);
+      totalDuration += secondsDur;
+    });
+    // Hours, minutes and seconds
+    var hrs = ~~(totalDuration / 3600);
+    var min = ~~((totalDuration % 3600) / 60);
+    var sec = ~~totalDuration % 60;
+  };
+
   useEffect(() => {
     if (playlistId) {
       fetchPlaylist();
       fetchVideoDurations();
+      calculateTotalDuration();
     } else {
       setLoadingPlaylistItems(false);
       setLoadingPlaylistVideo(false);
@@ -121,6 +138,12 @@ const CreateCourse = () => {
               List of Videos for course
             </Typography>
 
+            <div>
+              <Typography component="p" variant="hp">
+                Total Videos: {totalResults}
+              </Typography>
+            </div>
+
             {loadingPlaylistItems ? (
               <div className={classes.progress}>
                 <CircularProgress size={60} classes={classes.progress} />
@@ -137,7 +160,7 @@ const CreateCourse = () => {
           </Grid>
           {/* right half portion */}
           <Grid container item sm={6}>
-            Hello
+            <CourseForm />
           </Grid>
         </Grid>
       </Container>
