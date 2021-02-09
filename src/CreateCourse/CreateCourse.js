@@ -42,6 +42,7 @@ const CreateCourse = () => {
   const [loadingPlaylistVideo, setLoadingPlaylistVideo] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
   const [durations, setDurations] = useState([]);
+  const [totalTime,setTotalTime]=useState()
 
   const fetchPlaylist = async () => {
     setLoadingPlaylistItems(true);
@@ -74,17 +75,23 @@ const CreateCourse = () => {
   };
 
   const fetchVideoDurations = async () => {
+    console.log("okk")
     setLoadingPlaylistVideo(true);
     let newVideosArray = [];
+    console.log(durations);
+    console.log("loop",state)
     for (const videoObject of state) {
+      console.log("ok2",state);
       const { status, data } = await ytVideoRequest.get("/videos", {
         params: {
           id: videoObject.videoId,
         },
       });
+      console.log(status);
       if (status === 200) {
-        let duration = data.items[0]?.contentDetails.duration;
+        let duration = data.items[0].contentDetails.duration;
         setDurations([...durations, duration]);
+        console.log("chaltay ka nakii");
         console.log(duration);
         // save this duration in videoObject and save further in context
         newVideosArray.push({ ...videoObject, duration });
@@ -98,21 +105,26 @@ const CreateCourse = () => {
   };
 
   const calculateTotalDuration = () => {
+    // console.log("calokfun")
     let totalDuration = 0;
     durations.forEach(async (dur) => {
       let secondsDur = await convert_time(dur);
       totalDuration += secondsDur;
+      console.log(totalDuration);
     });
     // Hours, minutes and seconds
+    // console.log("ata hours")
     var hrs = ~~(totalDuration / 3600);
     var min = ~~((totalDuration % 3600) / 60);
     var sec = ~~totalDuration % 60;
+    console.log("total",totalDuration);
+    const totalTime=totalDuration
   };
 
   useEffect(() => {
     if (playlistId) {
       fetchPlaylist();
-      fetchVideoDurations();
+       fetchVideoDurations();
       calculateTotalDuration();
     } else {
       setLoadingPlaylistItems(false);
