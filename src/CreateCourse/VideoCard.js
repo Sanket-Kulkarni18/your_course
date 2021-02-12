@@ -20,6 +20,7 @@ import { useContext, useState } from "react";
 import { DELETE_VIDEO, EDIT_VIDEO_TITLE } from "../context/action.types";
 import { VideoListContext } from "../context/VideoListContext";
 import { PlaylistContext } from "../context/PlaylistContext";
+import { secondsToHms } from "../utils/functions";
 
 const useStyles = makeStyles({
   card: {
@@ -50,7 +51,7 @@ const useStyles = makeStyles({
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const VideoCard = ({ mVideo }) => {
+const VideoCard = ({ mVideo, duration }) => {
   const classes = useStyles();
 
   const { dispatch } = useContext(VideoListContext);
@@ -101,10 +102,10 @@ const VideoCard = ({ mVideo }) => {
             // width="240rem"
             className={classes.thumbImg}
           />
-          {mVideo.duration ? (
+          {duration ? (
             <div>
               <Typography component="p" className={classes.durationText}>
-                {mVideo.duration}
+                {secondsToHms(duration)}
               </Typography>
             </div>
           ) : null}

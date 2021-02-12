@@ -39,3 +39,22 @@ export const convert_time = (duration) => {
   // duration is in seconds
   return duration;
 };
+
+export const getVideoId = (url) => {
+  var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  var match = url.match(regExp);
+  return match && match[7].length === 11 ? match[7] : false;
+};
+
+export const secondsToHms = (d) => {
+  d = Number(d);
+
+  var h = Math.floor(d / 3600);
+  var m = Math.floor((d % 3600) / 60);
+  var s = Math.floor((d % 3600) % 60);
+
+  let hms =
+    ("0" + h).slice(-2) + ":" + ("0" + m).slice(-2) + ":" + ("0" + s).slice(-2);
+
+  return hms.slice(0, 2) === "00" ? hms.slice(3, hms.length) : hms;
+};

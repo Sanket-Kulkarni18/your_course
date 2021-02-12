@@ -1,4 +1,9 @@
-import { DELETE_VIDEO, EDIT_VIDEO_TITLE, SET_VIDEOS } from "./action.types";
+import {
+  ADD_SINGLE_VIDEO,
+  DELETE_VIDEO,
+  EDIT_VIDEO_TITLE,
+  SET_VIDEOS,
+} from "./action.types";
 
 export const reducer = (state, action) => {
   let newState = [...state];
@@ -15,6 +20,8 @@ export const reducer = (state, action) => {
       return newState;
     case DELETE_VIDEO:
       return newState.filter((vid) => vid.videoId !== action.id);
+    case ADD_SINGLE_VIDEO:
+      return [...newState, action.payload];
     default:
       return newState;
   }
