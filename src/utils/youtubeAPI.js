@@ -23,3 +23,12 @@ export const ytVideoRequest = axios.create({
   },
   headers: {},
 });
+
+ export const firebaseConfig = {
+ apiKey: "AIzaSyBKx9SFGUzz1uUtGkDyjFiL3zF0skagBIQ",
+    authDomain: "your-course-a96e0.firebaseapp.com",
+    projectId: "your-course-a96e0",
+    storageBucket: "your-course-a96e0.appspot.com",
+    messagingSenderId: "443915282374",
+    appId: "1:443915282374:web:d4e506128295bab56234c7"
+  };

@@ -5,6 +5,7 @@ import {
   Typography,
   Grid
 } from "@material-ui/core";
+import { Redirect } from "react-router-dom";
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
@@ -38,6 +39,12 @@ const CourseForm = () => {
   const [value, setValue] = useState("");
   const [num, setNum] = useState('');
   const [open, setOpen] = useState(false);
+   const [redirect, setRedirect] = useState();
+
+   const handleClick=(event)=>{
+     event.preventDefault();
+     setRedirect("auth");
+   }
 
    const handleChange = (event) => {
     setNum(event.target.value);
@@ -60,6 +67,8 @@ const handleRadioChange=(e)=>{
 
   return (
     <Container>
+     {/* if playlist id is fetched successfully, redirect to create course */}
+      {redirect==="auth" ? <Redirect to="/auth" /> : null}
       <form>
         <Typography component="h3" variant="h3">
           Course Details
@@ -155,6 +164,7 @@ const handleRadioChange=(e)=>{
                 className={classes.button}
                 variant="contained"
                 color="primary"
+                onClick={handleClick}
               >Set
               </Button> 
               </footer>
