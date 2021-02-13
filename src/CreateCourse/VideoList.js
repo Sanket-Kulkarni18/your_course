@@ -19,7 +19,7 @@ import { useContext, useEffect, useState } from "react";
 import { ADD_SINGLE_VIDEO, SET_VIDEOS } from "../context/action.types";
 import { PlaylistContext } from "../context/PlaylistContext";
 import { VideoListContext } from "../context/VideoListContext";
-import { youtubeRequest, ytVideoRequest } from "../utils/youtubeAPI";
+import { playlistItemsRequest, videoRequest } from "../utils/youtubeAPI";
 import VideoCard from "./VideoCard";
 import { convert_time, getVideoId, secondsToHms } from "../utils/functions";
 
@@ -50,101 +50,101 @@ const VideoList = ({ setTotalTime }) => {
   const { playlistId } = useContext(PlaylistContext);
   const { state, dispatch } = useContext(VideoListContext);
 
-  const [videos, setVideos] = useState();
-  const [loadingPlaylistItems, setLoadingPlaylistItems] = useState(true);
+  const [videoIDs, setVideoIDs] = useState([]);
   const [loadingPlaylistVideo, setLoadingPlaylistVideo] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
-  const [durations, setDurations] = useState([]);
   const [openAddVideoDialog, setOpenAddVideoDialog] = useState(false);
   const [singleVideoLink, setSingleVideoLink] = useState("");
 
   const fetchPlaylist = async () => {
-    setLoadingPlaylistItems(true);
-    const { status, data } = await youtubeRequest.get("/playlistItems", {
+    let videoIDsArray = [];
+    const { status, data } = await playlistItemsRequest.get("/playlistItems", {
       params: {
+        maxResults: 50,
         playlistId,
       },
     });
 
     if (status === 200) {
-      let videosArray = [];
       data.items.forEach((videoObject) => {
-        let video = {
-          videoId: videoObject.snippet?.resourceId.videoId,
-          thumb: videoObject.snippet?.thumbnails.medium.url,
-          videoTitle: videoObject.snippet?.title,
-          channelTitle: videoObject.snippet?.channelTitle,
-        };
-        videosArray.push(video);
+        let videoId = videoObject.contentDetails?.videoId;
+        videoIDsArray.push(videoId);
       });
-
-      // TODO: uncomment this for fetching whole playlist (while deploying)
-      /* while (data.nextPageToken) {
-          console.log("i want another request");
-          const response = await youtubeRequest.get("/playlistItems", {
-            params: {
-              playlistId,
-              pageToken: data.nextPageToken,
-            },
-          });
-          if (response.status === 200) {
-            response.data.items.forEach((videoObject) => {
-              let video = {
-                videoId: videoObject.snippet?.resourceId.videoId,
-                thumb: videoObject.snippet?.thumbnails.medium.url,
-                videoTitle: videoObject.snippet?.title,
-                channelTitle: videoObject.snippet?.channelTitle,
-              };
-              videosArray.push(video);
-            });
-          }
-        } */
-
-      // save data to context
-      dispatch({
-        type: SET_VIDEOS,
-        payload: videosArray,
-      });
-      // setVideos(videosArray);
-      setLoadingPlaylistItems(false);
-      setTotalResults(data.pageInfo?.totalResults);
     }
+
+    let hasNextPage = false;
+    let token = "";
+
+    if (data.nextPageToken) {
+      hasNextPage = true;
+      token = data.nextPageToken;
+    }
+
+    // TODO: uncomment this for fetching whole playlist (while deploying)
+    while (hasNextPage) {
+      console.log("i want another request");
+      const response = await playlistItemsRequest.get("/playlistItems", {
+        params: {
+          maxResults: 50,
+          playlistId,
+          pageToken: token,
+        },
+      });
+      if (response.status === 200) {
+        response.data.items.forEach((videoObject) => {
+          let videoId = videoObject.contentDetails?.videoId;
+          videoIDsArray.push(videoId);
+        });
+        if (response.data.nextPageToken) {
+          token = response.data.nextPageToken;
+        } else {
+          token = "";
+          hasNextPage = false;
+        }
+      }
+    }
+
+    setVideoIDs(videoIDsArray);
   };
 
-  const fetchVideoDurations = async () => {
+  const fetchVideoDetails = async () => {
     setLoadingPlaylistVideo(true);
     // console.log(videosArray);
-    let newVideosArray = [];
-    let tempDurations = [];
-    for (const videoObject of videos) {
-      const { status, data } = await ytVideoRequest.get("/videos", {
+    let videosArray = [];
+    // let tempDurations = [];
+    for (const videoId of videoIDs) {
+      const { status, data } = await videoRequest.get("/videos", {
         params: {
-          id: videoObject.videoId,
+          id: videoId,
         },
       });
       // console.log(status);
       if (status === 200) {
+        let snippet = data.items[0]?.snippet;
         let duration = data.items[0].contentDetails.duration;
-        tempDurations.push(convert_time(duration));
-        // console.log(duration);
+        let videoObject = {
+          videoId,
+          thumb: snippet?.thumbnails.medium.url,
+          videoTitle: snippet?.title,
+          channelTitle: snippet?.channelTitle,
+          duration,
+        };
+
         // save this duration in videoObject
-        newVideosArray.push({ ...videoObject, duration });
+        videosArray.push(videoObject);
       }
     }
-    console.log(newVideosArray);
-    setDurations(tempDurations);
-    // if context was updated here, then it will go in loop
-    // coz of the 4th useEffet hook defined below
-    // dispatch({
-    //   type: SET_VIDEOS,
-    //   payload: newVideosArray,
-    // });
+    console.log(videosArray);
+    dispatch({
+      type: SET_VIDEOS,
+      payload: videosArray,
+    });
   };
 
   const calculateTotalDuration = () => {
     let totalDuration = 0;
-    durations.forEach((dur) => {
-      totalDuration += dur;
+    state.forEach((videoObject) => {
+      totalDuration += convert_time(videoObject.duration);
     });
 
     setTotalTime(secondsToHms(totalDuration));
@@ -156,8 +156,8 @@ const VideoList = ({ setTotalTime }) => {
   const addSingleVideo = async () => {
     console.log(singleVideoLink);
     let videoId = getVideoId(singleVideoLink);
-
-    const { status, data } = await ytVideoRequest.get("/videos", {
+    // setVideoIDs([...videoIDs, videoId]);
+    const { status, data } = await videoRequest.get("/videos", {
       params: {
         id: videoId,
         part: "contentDetails, snippet",
@@ -170,6 +170,7 @@ const VideoList = ({ setTotalTime }) => {
         thumb: videoObject.snippet?.thumbnails.medium.url,
         videoTitle: videoObject.snippet?.title,
         channelTitle: videoObject.snippet?.channelTitle,
+        duration: videoObject.contentDetails?.duration,
       };
       dispatch({
         type: ADD_SINGLE_VIDEO,
@@ -185,35 +186,25 @@ const VideoList = ({ setTotalTime }) => {
     if (playlistId) {
       fetchPlaylist();
     } else {
-      setLoadingPlaylistItems(false);
       setLoadingPlaylistVideo(false);
     }
   }, [playlistId]);
 
   // second this will run
   useEffect(() => {
-    if (videos) {
-      // console.log("video ids: ", videos.videoId);
-      console.log("i was changed due to context");
-      fetchVideoDurations();
+    if (videoIDs.length !== 0) {
+      setTotalResults(videoIDs.length);
+      fetchVideoDetails();
     } else {
       console.log("wrong call");
     }
-  }, [videos]);
+  }, [videoIDs]);
 
   // third this will run
   useEffect(() => {
-    if (durations) {
-      calculateTotalDuration();
-    }
-  }, [durations]);
-
-  // forth: on every global state change, this will change local state i.e. videos
-  useEffect(() => {
     if (state.length !== 0) {
-      setVideos(state);
-    } else {
-      console.log("empty state changed");
+      setLoadingPlaylistVideo(false);
+      calculateTotalDuration();
     }
   }, [state]);
 
@@ -236,15 +227,19 @@ const VideoList = ({ setTotalTime }) => {
           </span>
         </div>
 
-        {loadingPlaylistItems ? (
+        {loadingPlaylistVideo ? (
           <div className={classes.progress}>
             <CircularProgress size={60} classes={classes.progress} />
           </div>
         ) : (
           <List className={classes.videoList}>
-            {state.map((mVideo, index) => (
+            {state.map((mVideo) => (
               <ListItem key={mVideo.videoId} maxWidth="100%">
-                <VideoCard mVideo={mVideo} duration={durations[index]} />
+                <VideoCard
+                  mVideo={mVideo}
+                  totalResults={totalResults}
+                  setTotalResults={setTotalResults}
+                />
               </ListItem>
             ))}
           </List>

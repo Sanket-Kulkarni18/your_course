@@ -20,7 +20,7 @@ import { useContext, useState } from "react";
 import { DELETE_VIDEO, EDIT_VIDEO_TITLE } from "../context/action.types";
 import { VideoListContext } from "../context/VideoListContext";
 import { PlaylistContext } from "../context/PlaylistContext";
-import { secondsToHms } from "../utils/functions";
+import { convert_time, secondsToHms } from "../utils/functions";
 
 const useStyles = makeStyles({
   card: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles({
 
 const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />;
 
-const VideoCard = ({ mVideo, duration }) => {
+const VideoCard = ({ mVideo, totalResults, setTotalResults }) => {
   const classes = useStyles();
 
   const { dispatch } = useContext(VideoListContext);
@@ -82,6 +82,7 @@ const VideoCard = ({ mVideo, duration }) => {
       id: mVideo.videoId,
     });
     setAlertOpen(true);
+    setTotalResults(totalResults - 1);
   };
 
   const handleAlertClose = (event, reason) => {
@@ -102,10 +103,10 @@ const VideoCard = ({ mVideo, duration }) => {
             // width="240rem"
             className={classes.thumbImg}
           />
-          {duration ? (
+          {mVideo.duration ? (
             <div>
               <Typography component="p" className={classes.durationText}>
-                {secondsToHms(duration)}
+                {secondsToHms(convert_time(mVideo.duration))}
               </Typography>
             </div>
           ) : null}
