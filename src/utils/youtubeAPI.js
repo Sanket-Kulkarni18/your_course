@@ -9,6 +9,8 @@ export const youtubeRequest = axios.create({
   baseURL: "https://www.googleapis.com/youtube/v3/",
   params: {
     part: "snippet",
+    // TODO: uncomment this when deplying
+    // maxResults: 50,
     maxResults: 5,
     key: API_KEY,
   },

@@ -3,7 +3,7 @@ import {
   makeStyles,
   TextField,
   Typography,
-  Grid
+  Grid,
 } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
 import InputLabel from '@material-ui/core/InputLabel';
@@ -19,11 +19,21 @@ import Button from '@material-ui/core/Button';
 import 'date-fns';
 import {useState} from 'react'
 import DateFnsUtils from '@date-io/date-fns';
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+import Radio from "@material-ui/core/Radio";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormLabel from "@material-ui/core/FormLabel";
+import Button from "@material-ui/core/Button";
+import "date-fns";
+import { useState } from "react";
+import DateFnsUtils from "@date-io/date-fns";
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
-} from '@material-ui/pickers';
+} from "@material-ui/pickers";
 const useStyles = makeStyles({
   textfield: {
     margin: "0.6em 0.3em",
@@ -33,11 +43,11 @@ const useStyles = makeStyles({
   },
 });
 
-const CourseForm = () => {
+const CourseForm = ({ totalTime }) => {
   const classes = useStyles();
   const [selectedDate, setSelectedDate] = useState();
   const [value, setValue] = useState("");
-  const [num, setNum] = useState('');
+  const [num, setNum] = useState("");
   const [open, setOpen] = useState(false);
    const [redirect, setRedirect] = useState();
 
@@ -46,7 +56,7 @@ const CourseForm = () => {
      setRedirect("auth");
    }
 
-   const handleChange = (event) => {
+  const handleChange = (event) => {
     setNum(event.target.value);
   };
 
@@ -59,11 +69,11 @@ const CourseForm = () => {
   };
   const handleDateChange = (date) => {
     setSelectedDate(date);
-}
-const handleRadioChange=(e)=>{
+  };
+  const handleRadioChange = (e) => {
     e.preventDefault();
-      setValue(e.target.value);
-    }
+    setValue(e.target.value);
+  };
 
   return (
     <Container>
@@ -79,6 +89,7 @@ const handleRadioChange=(e)=>{
           placeholder="course name"
           variant="outlined"
           fullWidth
+          required
           className={classes.textfield}
         />
         <TextField
@@ -168,6 +179,106 @@ const handleRadioChange=(e)=>{
               >Set
               </Button> 
               </footer>
+        {totalTime ? <h1>total duration {totalTime} </h1> : null}
+        <form>
+          <FormControl component="fieldset" className={classes.formControl}>
+            <FormLabel component="legend">
+              Let's start by deciding your goal of completing this course!
+              <br />
+            </FormLabel>
+            <RadioGroup
+              aria-label="Type of Duration you want to SET"
+              name="date set"
+              value={value}
+              onChange={handleRadioChange}
+            >
+              <FormControlLabel
+                value="rawData"
+                control={<Radio />}
+                label="Duration in approx. days/weeks/months"
+              />
+              <FormControlLabel
+                value="fixDate"
+                control={<Radio />}
+                label="Duration with fix dates"
+              />
+            </RadioGroup>
+          </FormControl>
+        </form>
+        {value === "fixDate" ? (
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <Grid container justify="space-around">
+              <KeyboardDatePicker
+                margin="normal"
+                id="date-picker-dialog"
+                label="Start date"
+                format="dd/MM/yyyy"
+                value={selectedDate}
+                onChange={handleDateChange}
+                KeyboardButtonProps={{
+                  "aria-label": "change date",
+                }}
+              />
+              <KeyboardDatePicker
+                margin="normal"
+                id="date-picker-dialog"
+                label="End date"
+                format="dd/MM/yyyy"
+                value={selectedDate}
+                onChange={handleDateChange}
+                KeyboardButtonProps={{
+                  "aria-label": "change date",
+                }}
+              />
+            </Grid>
+          </MuiPickersUtilsProvider>
+        ) : (
+          ""
+        )}
+        {value === "rawData" ? (
+          <FormControl className={classes.formControl}>
+            <span>set the number of (days/weeks/months)</span>
+            <TextField
+              id="filled-number"
+              label="Number"
+              type="number"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              variant="filled"
+              // style={{ display: "inline" }}
+            />
+            <Select
+              labelId="dropdown"
+              id="dropdown"
+              open={open}
+              onClose={handleClose}
+              onOpen={handleOpen}
+              value={num}
+              onChange={handleChange}
+              style={{ display: "inline" }}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value={"days"}>Days</MenuItem>
+              <MenuItem value={"weeks"}>Weeks</MenuItem>
+              <MenuItem value={"months"}>Months</MenuItem>
+            </Select>
+          </FormControl>
+        ) : (
+          " "
+        )}
+        <footer>
+          {" "}
+          <Button
+            className={classes.button}
+            variant="contained"
+            color="primary"
+          >
+            Set
+          </Button>
+        </footer>
       </form>
     </Container>
   );
