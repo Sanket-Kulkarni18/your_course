@@ -31,7 +31,7 @@ const HomePage = () => {
 
   // states
   const [url, setUrl] = useState("");
-  const [redirect, setRedirect] = useState(false);
+  const [redirect, setRedirect] = useState();
 
   // functions
   const getIdFromUrl = (playlistURL) => {
@@ -51,12 +51,12 @@ const HomePage = () => {
     e.preventDefault();
 
     setPlaylistId(getIdFromUrl(url));
-    setRedirect(true);
+    setRedirect("createCourse");
   };
   return (
     <div>
       {/* if playlist id is fetched successfully, redirect to create course */}
-      {redirect ? <Redirect to="/createCourse" /> : null}
+      {redirect==="createCourse" ? <Redirect to="/createCourse" /> : null}
       <Container>
         <Typography variant="h3" className={classes.heading}>
           Welcome to <b>Your Course</b>
