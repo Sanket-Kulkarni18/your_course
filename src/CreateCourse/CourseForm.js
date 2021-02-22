@@ -1,48 +1,63 @@
 import {
   Container,
+  Grid,
   makeStyles,
   TextField,
   Typography,
-  Grid,
 } from "@material-ui/core";
 import { Redirect } from "react-router-dom";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormLabel from "@material-ui/core/FormLabel";
 import Button from "@material-ui/core/Button";
 import "date-fns";
 import { useState } from "react";
-import DateFnsUtils from "@date-io/date-fns";
 import "date-fns";
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from "@material-ui/pickers";
+
 const useStyles = makeStyles({
+  formControl: {
+    width: "100%",
+  },
+  text: {
+    margin: "0.2em 0.4em",
+    fontSize: "1.2em",
+  },
   textfield: {
     margin: "0.6em 0.3em",
   },
+  gridContainer: {
+    margin: "1em",
+  },
   button: {
-    margin: "0 1em",
+    width: "100%",
+    margin: "1em 0.8em",
+    padding: "0.8em",
+    borderRadius: "0.8em",
+    fontSize: "1.0em",
+  },
+  inputNumber: {
+    margin: "1em 0",
+    width: "100%",
+  },
+  dropdown: {
+    width: "80%",
+    margin: "1em",
+    padding: "0.2em",
   },
 });
 
 const CourseForm = ({ totalTime }) => {
   const classes = useStyles();
-  const [selectedDate, setSelectedDate] = useState();
-  const [value, setValue] = useState("");
+  // const [selectedDate, setSelectedDate] = useState();
+  // const [value, setValue] = useState("");
   const [num, setNum] = useState("");
   const [open, setOpen] = useState(false);
   const [redirect, setRedirect] = useState();
 
-  const handleClick = (event) => {
-    event.preventDefault();
-    setRedirect("auth");
-  };
+  // const handleClick = (event) => {
+  //   event.preventDefault();
+  //   setRedirect("auth");
+  // };
 
   const handleChange = (event) => {
     setNum(event.target.value);
@@ -55,13 +70,13 @@ const CourseForm = ({ totalTime }) => {
   const handleOpen = () => {
     setOpen(true);
   };
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-  const handleRadioChange = (e) => {
-    e.preventDefault();
-    setValue(e.target.value);
-  };
+  // const handleDateChange = (date) => {
+  //   setSelectedDate(date);
+  // };
+  // const handleRadioChange = (e) => {
+  //   e.preventDefault();
+  //   setValue(e.target.value);
+  // };
 
   return (
     <Container>
@@ -90,9 +105,9 @@ const CourseForm = ({ totalTime }) => {
           placeholder="any description you want to give to this course!"
           className={classes.textfield}
         />
-        {totalTime ? <h1>total duration {totalTime} </h1> : null}
-        <form>
-          <FormControl component="fieldset" className={classes.formControl}>
+        {totalTime ? <h1>Total duration:- {totalTime} </h1> : null}
+        {/*<form>
+           <FormControl component="fieldset" className={classes.formControl}>
             <FormLabel component="legend">
               Let's start by deciding your goal of completing this course!
               <br />
@@ -115,8 +130,8 @@ const CourseForm = ({ totalTime }) => {
               />
             </RadioGroup>
           </FormControl>
-        </form>
-        {value === "fixDate" ? (
+        </form> */}
+        {/* {value === "fixDate" ? (
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <Grid container justify="space-around">
               <KeyboardDatePicker
@@ -145,41 +160,51 @@ const CourseForm = ({ totalTime }) => {
           </MuiPickersUtilsProvider>
         ) : (
           ""
-        )}
-        {value === "rawData" ? (
-          <FormControl className={classes.formControl}>
-            <span>set the number of (days/weeks/months)</span>
-            <TextField
-              id="filled-number"
-              label="Number"
-              type="number"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              variant="filled"
-              // style={{ display: "inline" }}
-            />
-            <Select
-              labelId="dropdown"
-              id="dropdown"
-              open={open}
-              onClose={handleClose}
-              onOpen={handleOpen}
-              value={num}
-              onChange={handleChange}
-              style={{ display: "inline" }}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              <MenuItem value={"days"}>Days</MenuItem>
-              <MenuItem value={"weeks"}>Weeks</MenuItem>
-              <MenuItem value={"months"}>Months</MenuItem>
-            </Select>
-          </FormControl>
-        ) : (
+        )} */}
+        {/* {value === "rawData" ? ( */}
+        <FormControl className={classes.formControl}>
+          <span className={classes.text}>Lets start by setting a target!</span>
+          <span className={classes.text}>
+            How much time do you think you will take to complete this course ?!
+          </span>
+          <Grid container className={classes.gridContainer}>
+            <Grid item sm={6}>
+              <TextField
+                id="filled-number"
+                label="Number"
+                type="number"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant="outlined"
+                className={classes.inputNumber}
+                // style={{ display: "inline" }}
+              />
+            </Grid>
+            <Grid item sm={6}>
+              <Select
+                labelId="dropdown"
+                id="dropdown"
+                open={open}
+                onClose={handleClose}
+                onOpen={handleOpen}
+                value={num}
+                onChange={handleChange}
+                className={classes.dropdown}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value={"days"}>Days</MenuItem>
+                <MenuItem value={"weeks"}>Weeks</MenuItem>
+                <MenuItem value={"months"}>Months</MenuItem>
+              </Select>
+            </Grid>
+          </Grid>
+        </FormControl>
+        {/* ) : (
           " "
-        )}
+        )} */}
         <footer>
           {" "}
           <Button
@@ -187,7 +212,7 @@ const CourseForm = ({ totalTime }) => {
             variant="contained"
             color="primary"
           >
-            Set
+            Let's Create this course!
           </Button>
         </footer>
       </form>

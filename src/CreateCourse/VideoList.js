@@ -60,7 +60,7 @@ const VideoList = ({ setTotalTime }) => {
     let videoIDsArray = [];
     const { status, data } = await playlistItemsRequest.get("/playlistItems", {
       params: {
-        maxResults: 50,
+        // maxResults: 50,
         playlistId,
       },
     });
@@ -76,7 +76,7 @@ const VideoList = ({ setTotalTime }) => {
     let token = "";
 
     if (data.nextPageToken) {
-      hasNextPage = true;
+      // hasNextPage = true;
       token = data.nextPageToken;
     }
 
