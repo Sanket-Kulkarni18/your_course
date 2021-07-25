@@ -58,3 +58,12 @@ export const secondsToHms = (d) => {
 
   return hms.slice(0, 2) === "00" ? hms.slice(3, hms.length) : hms;
 };
+
+export const getUserData = (userData) => {
+  return {
+    uid: userData.uid,
+    userName: userData.displayName,
+    profilePic: userData.photoURL,
+    email: userData.email,
+  };
+};

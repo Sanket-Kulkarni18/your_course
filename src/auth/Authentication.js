@@ -7,6 +7,7 @@ import Container from "@material-ui/core/Container";
 import { firebaseConfig } from "../utils/youtubeAPI";
 import firebase from "firebase/app";
 import "firebase/auth";
+import { getUserData } from "../utils/functions";
 
 const Authentication = () => {
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,16 +15,11 @@ const Authentication = () => {
   const { user, setUser } = useContext(UserContext);
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
+    firebase.auth().onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
         // setIsLoggedIn(true);
-        setUser({
-          uid: user.uid,
-          userName: user.displayName,
-          profilePic: user.photoURL,
-          email: user.email,
-        });
-        console.log(user);
+        setUser(getUserData(firebaseUser));
+        console.log(firebaseUser);
       } else {
         console.log("no user signed in!");
         // setIsLoggedIn(true);
@@ -52,6 +48,7 @@ const Authentication = () => {
         }
         // The signed-in user info.
         var user = result.user;
+        // console.log(user);
       })
       .catch((error) => {
         // Handle Errors here.
@@ -61,6 +58,7 @@ const Authentication = () => {
         var email = error.email;
         // The firebase.auth.AuthCredential type that was used.
         var credential = error.credential;
+        console.log(errorMessage);
       });
   };
   const githubLogin = (provider) => {

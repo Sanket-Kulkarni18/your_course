@@ -1,12 +1,13 @@
 import axios from "axios";
 
 const API_KEY = "AIzaSyBKx9SFGUzz1uUtGkDyjFiL3zF0skagBIQ";
+const BASE_URL = "https://www.googleapis.com/youtube/v3/";
 
 // playlist request
 // https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=PLRAV69dS1uWSxUIk5o3vQY2-_VKsOpXLD&key=AIzaSyBKx9SFGUzz1uUtGkDyjFiL3zF0skagBIQ
 
 export const playlistItemsRequest = axios.create({
-  baseURL: "https://www.googleapis.com/youtube/v3/",
+  baseURL: BASE_URL,
   params: {
     part: "contentDetails",
     // TODO: uncomment this when deplying
@@ -18,10 +19,20 @@ export const playlistItemsRequest = axios.create({
 });
 
 export const videoRequest = axios.create({
-  baseURL: "https://www.googleapis.com/youtube/v3/",
+  baseURL: BASE_URL,
   params: {
     part: "snippet, contentDetails",
     key: API_KEY,
+  },
+  headers: {},
+});
+
+export const playlistRequest = axios.create({
+  baseURL: BASE_URL,
+  params: {
+    part: "snippet",
+    key: API_KEY,
+    maxResults: 1,
   },
   headers: {},
 });

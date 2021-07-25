@@ -1,4 +1,5 @@
 import {
+  CircularProgress,
   Container,
   Grid,
   makeStyles,
@@ -11,8 +12,16 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import "date-fns";
-import { useState } from "react";
-import "date-fns";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext";
+
+import firebase from "firebase/app";
+import "firebase/database";
+import "firebase/auth";
+import { PlaylistContext } from "../context/PlaylistContext";
+import { getUserData, secondsToHms } from "../utils/functions";
+import { VideoListContext } from "../context/VideoListContext";
+import { playlistRequest } from "../utils/youtubeAPI";
 
 const useStyles = makeStyles({
   formControl: {
@@ -42,7 +51,9 @@ const useStyles = makeStyles({
   dropdown: {
     width: "80%",
     margin: "1em",
-    padding: "0.2em",
+  },
+  progress: {
+    color: "#ffffff",
   },
 });
 
@@ -50,17 +61,58 @@ const CourseForm = ({ totalTime }) => {
   const classes = useStyles();
   // const [selectedDate, setSelectedDate] = useState();
   // const [value, setValue] = useState("");
-  const [num, setNum] = useState("");
+
+  const { user, setUser, setCourseObj, setUserCourse } = useContext(
+    UserContext
+  );
+  const { playlistId } = useContext(PlaylistContext);
+  const { state } = useContext(VideoListContext);
+
   const [open, setOpen] = useState(false);
   const [redirect, setRedirect] = useState();
+  const [loading, setLoading] = useState(false);
 
-  // const handleClick = (event) => {
-  //   event.preventDefault();
-  //   setRedirect("auth");
-  // };
+  const [courseThumb, setCourseThumb] = useState("");
+  const [courseTitle, setCourseTitle] = useState("");
+  const [courseDescription, setCourseDescription] = useState("");
+  const [channelTitle, setChannelTitle] = useState("");
+  const [numDuration, setNumDuration] = useState("");
+  const [unitOfDuration, setUnitOfDuration] = useState("");
+
+  useEffect(() => {
+    if (playlistId) {
+      requestPlaylistDetails();
+    }
+    if (!user) {
+      firebase.auth().onAuthStateChanged((firebaseUser) => {
+        if (firebaseUser) {
+          setUser(getUserData(firebaseUser));
+        }
+      });
+    }
+  }, []);
+
+  const requestPlaylistDetails = async () => {
+    const { status, data } = await playlistRequest.get("/playlists", {
+      params: {
+        id: playlistId,
+      },
+    });
+    if (status === 200) {
+      let snippet = data.items[0]?.snippet;
+      setCourseTitle(snippet.title);
+      setCourseDescription(
+        snippet.description
+          ? snippet.description
+          : `${snippet.title} by ${snippet.channelTitle}`
+      );
+      setCourseThumb(snippet.thumbnails?.medium.url);
+      setChannelTitle(snippet.channelTitle);
+    }
+  };
 
   const handleChange = (event) => {
-    setNum(event.target.value);
+    setUnitOfDuration(event.target.value);
   };
 
   const handleClose = () => {
@@ -78,10 +130,49 @@ const CourseForm = ({ totalTime }) => {
   //   setValue(e.target.value);
   // };
 
+  const createCourseDetails = () => {
+    // store the course globally
+    let courseId = firebase.database().ref("courses").push().key;
+    let courseObj = {
+      courseId,
+      playlistId: playlistId,
+      courseTitle,
+      courseDescription,
+      courseThumb,
+      channelTitle,
+      totalDuration: totalTime,
+      videos: state,
+    };
+    // store same course for particular user
+    let userCourse = {
+      ...courseObj,
+      targetTime: numDuration,
+      targetUnit: unitOfDuration,
+      percentCompleted: 0,
+    };
+    setCourseObj(courseObj);
+    setUserCourse(userCourse);
+    setLoading(false);
+  };
+
+  const handleCourseSubmit = () => {
+    if (playlistId) {
+      // start loader
+      setLoading(true);
+      // create and save course objects in user-context
+      createCourseDetails();
+      setLoading(false);
+      user ? setRedirect("profile") : setRedirect("auth");
+    } else {
+      setRedirect("playlist");
+    }
+  };
+
   return (
     <Container>
       {/* if playlist id is fetched successfully, redirect to create course */}
       {redirect === "auth" ? <Redirect to="/auth" /> : null}
+      {redirect === "profile" ? <Redirect to="/profile" /> : null}
       <form>
         <Typography component="h3" variant="h3">
           Course Details
@@ -94,6 +185,8 @@ const CourseForm = ({ totalTime }) => {
           fullWidth
           required
           className={classes.textfield}
+          value={courseTitle}
+          onChange={(e) => setCourseTitle(e.target.value)}
         />
         <TextField
           id="outlined-multiline-static"
@@ -104,8 +197,24 @@ const CourseForm = ({ totalTime }) => {
           fullWidth
           placeholder="any description you want to give to this course!"
           className={classes.textfield}
+          value={courseDescription}
+          onChange={(e) => setCourseDescription(e.target.value)}
         />
-        {totalTime ? <h1>Total duration:- {totalTime} </h1> : null}
+        <Grid container>
+          <Grid item lg={6}>
+            <img src={courseThumb} alt="course_thumbnail" />
+          </Grid>
+          <Grid item lg={6}>
+            {totalTime ? (
+              <>
+                <Typography variant="h6">Total duration (HH:MM:SS)</Typography>
+                <br />{" "}
+                <Typography variant="h3">{secondsToHms(totalTime)}</Typography>
+              </>
+            ) : null}
+          </Grid>
+        </Grid>
+
         {/*<form>
            <FormControl component="fieldset" className={classes.formControl}>
             <FormLabel component="legend">
@@ -163,12 +272,15 @@ const CourseForm = ({ totalTime }) => {
         )} */}
         {/* {value === "rawData" ? ( */}
         <FormControl className={classes.formControl}>
-          <span className={classes.text}>Lets start by setting a target!</span>
-          <span className={classes.text}>
+          <Typography variant="h6">
+            Lets start by setting a target!
+            <br />
             How much time do you think you will take to complete this course ?!
-          </span>
+          </Typography>
+          {/* <span className={classes.text}></span>
+          <span className={classes.text}></span> */}
           <Grid container className={classes.gridContainer}>
-            <Grid item sm={6}>
+            <Grid item xs={6}>
               <TextField
                 id="filled-number"
                 label="Number"
@@ -178,19 +290,22 @@ const CourseForm = ({ totalTime }) => {
                 }}
                 variant="outlined"
                 className={classes.inputNumber}
+                value={numDuration}
+                onChange={(e) => setNumDuration(e.target.value)}
                 // style={{ display: "inline" }}
               />
             </Grid>
-            <Grid item sm={6}>
+            <Grid item xs={6}>
               <Select
                 labelId="dropdown"
                 id="dropdown"
                 open={open}
                 onClose={handleClose}
                 onOpen={handleOpen}
-                value={num}
+                value={unitOfDuration}
                 onChange={handleChange}
                 className={classes.dropdown}
+                variant="outlined"
               >
                 <MenuItem value="">
                   <em>None</em>
@@ -206,13 +321,19 @@ const CourseForm = ({ totalTime }) => {
           " "
         )} */}
         <footer>
-          {" "}
           <Button
             className={classes.button}
             variant="contained"
             color="primary"
+            onClick={handleCourseSubmit}
           >
-            Let's Create this course!
+            {loading ? (
+              <div className={classes.progress}>
+                <CircularProgress className={classes.progress} />
+              </div>
+            ) : (
+              "Create this course for me!"
+            )}
           </Button>
         </footer>
       </form>

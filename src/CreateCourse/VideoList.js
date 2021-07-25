@@ -76,11 +76,11 @@ const VideoList = ({ setTotalTime }) => {
     let token = "";
 
     if (data.nextPageToken) {
+      // TODO: uncomment this for fetching whole playlist (while deploying)
       // hasNextPage = true;
       token = data.nextPageToken;
     }
 
-    // TODO: uncomment this for fetching whole playlist (while deploying)
     while (hasNextPage) {
       console.log("i want another request");
       const response = await playlistItemsRequest.get("/playlistItems", {
@@ -147,7 +147,7 @@ const VideoList = ({ setTotalTime }) => {
       totalDuration += convert_time(videoObject.duration);
     });
 
-    setTotalTime(secondsToHms(totalDuration));
+    setTotalTime(totalDuration);
   };
 
   const toggleAddVideoDialog = () => {
